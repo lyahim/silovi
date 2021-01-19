@@ -1,2 +1,2 @@
-# silovi
-Simple Log Viewer
+# SiLoVi - Simple Log Viewer
+The goal of the project create a very simple but useful tool to access log(not only) files on servers in browser without difficult installation, great infrastucture and huge amount of configuration.

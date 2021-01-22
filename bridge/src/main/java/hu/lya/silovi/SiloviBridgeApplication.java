@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SiloviCollectorApplication {
+public class SiloviBridgeApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SiloviCollectorApplication.class, args);
+		SpringApplication.run(SiloviBridgeApplication.class, args);
 	}
 
 }

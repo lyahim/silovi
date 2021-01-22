@@ -60,7 +60,7 @@ public class FileSystemWrapperTest {
 
 		Long size = fsWrapper.getFileSize(fs.getPath(LOG_PATH_UNIX, "system.log"));
 
-		Assertions.assertEquals(27, size);
+		Assertions.assertEquals(26, size);
 	}
 
 	@Test
@@ -222,8 +222,7 @@ public class FileSystemWrapperTest {
 		Files.createFile(fileSystem.getPath(baseFolder, "sub", "app.log"));
 		FileSystemWrapper fsWrapper = new FileSystemWrapper(baseFolder, pattern, fileSystem);
 
-		Files.write(fileSystem.getPath(baseFolder, "system.log"),
-				("lorem ipsum" + System.lineSeparator() + "dolor sit amet").getBytes());
+		Files.write(fileSystem.getPath(baseFolder, "system.log"), "lorem ipsum\ndolor sit amet".getBytes());
 
 		return fsWrapper;
 	}

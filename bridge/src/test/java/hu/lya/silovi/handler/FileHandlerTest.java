@@ -157,6 +157,20 @@ public class FileHandlerTest {
 	}
 
 	@Test
+	void searchInFileContent_find_result_regex() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		Flux<String> result = webTestClient.get().uri("/file/AbC?searchKey=^dolor.*").exchange().expectStatus().isOk()
+				.returnResult(String.class).getResponseBody();
+		StepVerifier.create(result).expectSubscription().expectNext("dolor sit amet").expectComplete().verify();
+	}
+
+	@Test
 	void searchInFileContent_invalid_id() {
 		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(null);
 

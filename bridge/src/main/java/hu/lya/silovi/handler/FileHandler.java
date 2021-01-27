@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,7 +43,7 @@ public class FileHandler {
 
 	private boolean filterLinesBySearchKey(final String line, final String searchKey) {
 		if (StringUtils.isNotEmpty(searchKey)) {
-			return line.toLowerCase().contains(searchKey.toLowerCase());
+			return line.toLowerCase().contains(searchKey.toLowerCase()) || Pattern.matches(searchKey, line);
 		}
 		return true;
 	}

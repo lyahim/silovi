@@ -74,8 +74,8 @@ public class FileHandler {
 
 	public Mono<ServerResponse> getFileTailContent(final ServerRequest serverRequest) {
 		String fileId = serverRequest.pathVariable("id");
-		return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(getFileTailContent(fileId),
-				String.class);
+		return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+				.body(getFileTailContent(fileId).collectList(), List.class);
 	}
 
 	private Flux<String> getFileTailContent(final String id) {

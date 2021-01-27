@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +38,13 @@ public class FileHandler {
 		this.tailLinesCount = tailLinesCount;
 		this.fileCheckInterval = fileCheckInterval;
 		this.fileSystemWrapper = fileSystemWrapper;
+	}
+
+	private boolean filterLinesBySearchKey(final String line, final String searchKey) {
+		if (StringUtils.isNotEmpty(searchKey)) {
+			return line.toLowerCase().contains(searchKey.toLowerCase());
+		}
+		return true;
 	}
 
 	private String generateFileId(final String relativePath, final String fileName) {
@@ -106,7 +114,7 @@ public class FileHandler {
 						return Flux.fromStream(fileSystemWrapper.getFileStream(filePath));
 					} else {
 						return Flux.fromStream(fileSystemWrapper.getFileStream(filePath)
-								.filter(line -> line.toLowerCase().contains(searchKey.toLowerCase())));
+								.filter(line -> filterLinesBySearchKey(line, searchKey)));
 					}
 				} catch (IOException e) {
 					log.error(e.getMessage(), e);
@@ -119,11 +127,12 @@ public class FileHandler {
 	@SuppressWarnings("deprecation")
 	public Mono<ServerResponse> tailfFile(final ServerRequest serverRequest) {
 		String fileId = serverRequest.pathVariable("id");
-		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON).body(watchFileChanges(fileId).log(),
-				String.class);
+		String searchKey = serverRequest.queryParam("searchKey").orElse(null);
+		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON)
+				.body(watchFileChanges(fileId, searchKey).log(), List.class);
 	}
 
-	private Flux<String> watchFileChanges(final String fileId) {
+	private Flux<List<String>> watchFileChanges(final String fileId, final String searchKey) {
 		Path filePath = fileSystemWrapper.getPathByFileId(fileId);
 		if (filePath != null) {
 			AtomicLong filePointer = new AtomicLong(fileSystemWrapper.getFileSize(filePath));
@@ -133,12 +142,13 @@ public class FileHandler {
 				long length = fileSystemWrapper.getFileSize(filePath);
 				long lastLength = filePointer.longValue();
 				if (length > lastLength) {
-					result.addAll(fileSystemWrapper.readLinesFromIndex(filePath, lastLength));
+					result.addAll(fileSystemWrapper.readLinesFromIndex(filePath, lastLength).stream()
+							.filter(line -> filterLinesBySearchKey(line, searchKey)).collect(Collectors.toList()));
 					if (!result.isEmpty()) {
 						filePointer.set(length);
 					}
 				}
-				return Flux.fromIterable(result);
+				return Flux.just(result);
 			});
 		}
 		return Flux.empty();

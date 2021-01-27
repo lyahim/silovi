@@ -63,7 +63,7 @@ public class FileHandlerTest {
 		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.filesRoute(fileHandler)).build();
 
 		webTestClient.get().uri("/files").exchange().expectStatus().isOk().expectBody()
-				.json("[{\"id\":\"bG9ncy9maWxlLmxvZw\",\"name\":\"file.log\",\"path\":\"logs\",\"size\":0}]");
+				.json("[{\"id\":\"L2xvZ3MvZmlsZS5sb2c\",\"name\":\"file.log\",\"path\":\"/logs\",\"size\":0}]");
 	}
 
 	@Test
@@ -90,7 +90,7 @@ public class FileHandlerTest {
 		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
 				.build();
 
-		webTestClient.get().uri("/file-end/AbC").exchange().expectStatus().isOk().expectBody().isEmpty();
+		webTestClient.get().uri("/file-end/AbC").exchange().expectStatus().isOk().expectBody().json("[]");
 
 	}
 
@@ -99,7 +99,7 @@ public class FileHandlerTest {
 		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
 				.build();
 
-		webTestClient.get().uri("/file-end/ ").exchange().expectStatus().isOk().expectBody().isEmpty();
+		webTestClient.get().uri("/file-end/ ").exchange().expectStatus().isOk().expectBody().json("[]");
 
 	}
 
@@ -113,8 +113,8 @@ public class FileHandlerTest {
 		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
 				.build();
 
-		Assertions.assertEquals("lorem ipsumdolor sit amet", webTestClient.get().uri("/file-end/AbC").exchange()
-				.expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+		Assertions.assertEquals("[\"lorem ipsum\",\"dolor sit amet\"]", webTestClient.get().uri("/file-end/AbC")
+				.exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody().toString());
 	}
 
 	private Path mockFile(final String parentFolder) throws IOException {
@@ -205,6 +205,7 @@ public class FileHandlerTest {
 
 	@Test
 	void tailfFile_invalid_id() {
+		// TODO test doesn't work well, check it
 		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(null);
 
 		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
@@ -215,6 +216,7 @@ public class FileHandlerTest {
 
 	@Test
 	void tailfFile_no_id() {
+		// TODO test doesn't work well, check it
 		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
 				.build();
 
@@ -223,6 +225,7 @@ public class FileHandlerTest {
 
 	@Test
 	void tailfFile_valid_id() throws IOException {
+		// TODO test doesn't work well, check it
 		ReflectionTestUtils.setField(fileHandler, "fileCheckInterval", 100L);
 		Path mockPath = Mockito.mock(Path.class);
 		Mockito.when(fileSystemWrapper.getFileSize(mockPath)).thenReturn(1L).thenReturn(2L).thenReturn(3L)
@@ -238,5 +241,4 @@ public class FileHandlerTest {
 				.returnResult(String.class);
 		StepVerifier.create(result.getResponseBody()).expectSubscription().thenCancel().log().verify();
 	}
-
 }

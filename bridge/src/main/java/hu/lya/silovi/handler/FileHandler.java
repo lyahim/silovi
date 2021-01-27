@@ -53,7 +53,7 @@ public class FileHandler {
 			return Flux.fromStream(fileSystemWrapper.getFilteredLogFiles()).map(file -> {
 				FileDataDto data = new FileDataDto();
 				String relativePath = file.getParent().toString().replace(baseFolderPathStr, PATH_SEPARATOR)
-						.replaceAll("\\\\", ""); // remove windows separators
+						.replaceAll("\\\\", "/").replace("//", "/"); // remove windows separators
 				String fileName = file.getFileName().toString();
 
 				data.setId(generateFileId(relativePath, fileName));

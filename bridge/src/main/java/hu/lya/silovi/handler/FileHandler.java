@@ -29,6 +29,8 @@ import reactor.core.publisher.Mono;
 public class FileHandler {
 
 	private static final String PATH_SEPARATOR = "/";
+	private static final int BUFFER_SIZE = 100;
+	private static final int DELAY_MS = 100;
 
 	private FileSystemWrapper fileSystemWrapper;
 	private Integer tailLinesCount;
@@ -52,6 +54,24 @@ public class FileHandler {
 		return Base64.getEncoder().withoutPadding().encodeToString(
 				new String(relativePath + (!relativePath.equals(PATH_SEPARATOR) ? PATH_SEPARATOR : "") + fileName)
 						.getBytes());
+	}
+
+	@SuppressWarnings("deprecation")
+	public Mono<ServerResponse> getFileEndContent(final ServerRequest serverRequest) {
+		String fileId = serverRequest.pathVariable("id");
+		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON)
+				.body(getFileEndContent(fileId).buffer(BUFFER_SIZE).log(), List.class);
+	}
+
+	private Flux<String> getFileEndContent(final String id) {
+		if (StringUtils.isNotEmpty(id)) {
+			Path filePath = fileSystemWrapper.getPathByFileId(id);
+			if (filePath != null) {
+				Stream<String> lastLines = fileSystemWrapper.getLastnLinesStream(filePath, tailLinesCount);
+				return Flux.fromStream(lastLines);
+			}
+		}
+		return Flux.empty();
 	}
 
 	private Flux<FileDataDto> getFileList() {
@@ -81,29 +101,13 @@ public class FileHandler {
 		return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(getFileList(), FileDataDto.class);
 	}
 
-	public Mono<ServerResponse> getFileTailContent(final ServerRequest serverRequest) {
-		String fileId = serverRequest.pathVariable("id");
-		return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-				.body(getFileTailContent(fileId).collectList(), List.class);
-	}
-
-	private Flux<String> getFileTailContent(final String id) {
-		if (StringUtils.isNotEmpty(id)) {
-			Path filePath = fileSystemWrapper.getPathByFileId(id);
-			if (filePath != null) {
-				Stream<String> lastLines = fileSystemWrapper.getLastnLinesStream(filePath, tailLinesCount);
-				return Flux.fromStream(lastLines);
-			}
-		}
-		return Flux.empty();
-	}
-
 	@SuppressWarnings("deprecation")
 	public Mono<ServerResponse> searchInFileContent(final ServerRequest serverRequest) {
 		String fileId = serverRequest.pathVariable("id");
 		String searchKey = serverRequest.queryParam("searchKey").orElse(null);
 		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON)
-				.body(searchInFileContent(fileId, searchKey), String.class);
+				.body(searchInFileContent(fileId, searchKey).log().buffer(BUFFER_SIZE)
+						.delayElements(Duration.ofMillis(DELAY_MS)), List.class);
 	}
 
 	private Flux<String> searchInFileContent(final String id, final String searchKey) {

@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -32,6 +31,40 @@ public class FileHandlerTest {
 
 	@InjectMocks
 	private FileHandler fileHandler;
+
+	@Test
+	void getFileEndContent_invalid_id() {
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(null);
+
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file-end/AbC").exchange().expectStatus().isOk().expectBody().isEmpty();
+
+	}
+
+	@Test
+	void getFileEndContent_no_id() {
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file-end/ ").exchange().expectStatus().isOk().expectBody().isEmpty();
+
+	}
+
+	@Test
+	void getFileEndContent_valid_result() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getLastnLinesStream(mockFile, null))
+				.thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file-end/AbC").exchange().expectStatus().isOk().expectBody()
+				.json("[\"lorem ipsum\",\"dolor sit amet\"]");
+	}
 
 	@Test
 	void getFileList_has_file_rootParent() throws IOException {
@@ -83,40 +116,6 @@ public class FileHandlerTest {
 		webTestClient.get().uri("/files").exchange().expectStatus().isOk().expectBody().json("[]");
 	}
 
-	@Test
-	void getFileTailContent_invalid_id() {
-		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(null);
-
-		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
-				.build();
-
-		webTestClient.get().uri("/file-end/AbC").exchange().expectStatus().isOk().expectBody().json("[]");
-
-	}
-
-	@Test
-	void getFileTailContent_no_id() {
-		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
-				.build();
-
-		webTestClient.get().uri("/file-end/ ").exchange().expectStatus().isOk().expectBody().json("[]");
-
-	}
-
-	@Test
-	void getFileTailContent_valid_result() throws IOException {
-		Path mockFile = Mockito.mock(Path.class);
-		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
-		Mockito.when(fileSystemWrapper.getLastnLinesStream(mockFile, null))
-				.thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
-
-		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
-				.build();
-
-		Assertions.assertEquals("[\"lorem ipsum\",\"dolor sit amet\"]", webTestClient.get().uri("/file-end/AbC")
-				.exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody().toString());
-	}
-
 	private Path mockFile(final String parentFolder) throws IOException {
 		Path mockFile = Mockito.mock(Path.class);
 		Path fileName = Mockito.mock(Path.class);
@@ -153,7 +152,7 @@ public class FileHandlerTest {
 
 		Flux<String> result = webTestClient.get().uri("/file/AbC?searchKey=dolor").exchange().expectStatus().isOk()
 				.returnResult(String.class).getResponseBody();
-		StepVerifier.create(result).expectSubscription().expectNext("dolor sit amet").expectComplete().verify();
+		StepVerifier.create(result).expectSubscription().expectNext("[\"dolor sit amet\"]").expectComplete().verify();
 	}
 
 	@Test
@@ -167,7 +166,7 @@ public class FileHandlerTest {
 
 		Flux<String> result = webTestClient.get().uri("/file/AbC?searchKey=^dolor.*").exchange().expectStatus().isOk()
 				.returnResult(String.class).getResponseBody();
-		StepVerifier.create(result).expectSubscription().expectNext("dolor sit amet").expectComplete().verify();
+		StepVerifier.create(result).expectSubscription().expectNext("[\"dolor sit amet\"]").expectComplete().verify();
 	}
 
 	@Test
@@ -213,8 +212,8 @@ public class FileHandlerTest {
 
 		Flux<String> result = webTestClient.get().uri("/file/AbC").exchange().expectStatus().isOk()
 				.returnResult(String.class).getResponseBody();
-		StepVerifier.create(result).expectSubscription().expectNext("lorem ipsumdolor sit amet").expectComplete()
-				.verify();
+		StepVerifier.create(result).expectSubscription().expectNext("[\"lorem ipsum\",\"dolor sit amet\"]")
+				.expectComplete().verify();
 	}
 
 	@Test

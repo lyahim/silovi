@@ -19,7 +19,7 @@ public class FileRouter {
 				.route(RequestPredicates.GET("/file/{id}").and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
 						handler::searchInFileContent) //
 				.andRoute(RequestPredicates.GET("/file-end/{id}")
-						.and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), handler::getFileTailContent)
+						.and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), handler::getFileEndContent)
 				.andRoute(RequestPredicates.GET("/file-tail/{id}")
 						.and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), handler::tailfFile);
 	}

@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+const currentHost = window.location.protocol + "//" + window.location.host;
+const backendUrl = process.env.NODE_ENV === "development" ? process.env.VUE_APP_DEV_BACKEND_URL : currentHost;
+
 function loadFileTree() {
     return axios
-        .get(process.env.VUE_APP_BACKEND_URL + '/file-tree')
+        .get(backendUrl + '/file-tree')
         .then(response => {
             return response.data;
         })
@@ -12,7 +15,7 @@ function loadFileTree() {
         });
 }
 function refreshFileTree() {
-    return axios.get(process.env.VUE_APP_BACKEND_URL + '/refresh-file-tree')
+    return axios.get(backendUrl + '/refresh-file-tree')
         .then(response => {
             return response.data;
         })
@@ -24,7 +27,7 @@ function refreshFileTree() {
 
 function loadFileEnd(bridgeName, fileId) {
     return axios
-        .get(process.env.VUE_APP_BACKEND_URL + '/file-end/' + bridgeName + "/" + fileId)
+        .get(backendUrl + '/file-end/' + bridgeName + "/" + fileId)
         .then(response => {
             return this.content = response.data;
         })

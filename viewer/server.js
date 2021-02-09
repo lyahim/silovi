@@ -26,7 +26,7 @@ let configFileJson = {};
 http.listen(port, () => {
     configFileJson = getConfigFileContent();
     loadFileTree();
-    console.log("SiLoVi viewer started");
+    console.log("SiLoVi viewer started on PORT " + port);
 });
 
 app.get('/file-tree', (req, res) => {

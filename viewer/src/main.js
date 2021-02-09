@@ -9,7 +9,8 @@ import 'typeface-roboto/index.css'
 
 Vue.config.productionTip = false
 
-const socket = io(process.env.VUE_APP_BACKEND_URL);
+const currentHost = window.location.protocol + "//" + window.location.host;
+const socket = io(process.env.NODE_ENV === "development" ? process.env.VUE_APP_DEV_BACKEND_URL : currentHost);
 
 Vue.use(VueSocketIOExt, socket);
 

@@ -21,8 +21,8 @@ public class SecurityConfig {
 	private String userName;
 	private String password;
 
-	public SecurityConfig(@Value("${auth_username}") final String userName,
-			@Value("${auth_password}") final String password) {
+	public SecurityConfig(@Value("${auth_username:}") final String userName,
+			@Value("${auth_password:}") final String password) {
 		this.userName = userName;
 		this.password = password;
 	}

@@ -90,7 +90,7 @@ public class FileSystemWrapper {
 
 	public Path getPathByFileId(final String fileId) {
 		try {
-			String relativePath = new String(Base64.getDecoder().decode(fileId));
+			String relativePath = new String(Base64.getUrlDecoder().decode(fileId));
 			Path filePath = fileSystem.getPath(baseFolder + relativePath);
 			if (Files.exists(filePath)) {
 				return filePath;

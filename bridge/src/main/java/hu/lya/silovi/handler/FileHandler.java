@@ -51,7 +51,7 @@ public class FileHandler {
 	}
 
 	private String generateFileId(final String relativePath, final String fileName) {
-		return Base64.getEncoder().withoutPadding().encodeToString(
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(
 				new String(relativePath + (!relativePath.equals(PATH_SEPARATOR) ? PATH_SEPARATOR : "") + fileName)
 						.getBytes());
 	}

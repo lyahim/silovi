@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.input.ReversedLinesFileReader;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,9 @@ public class FileSystemWrapper {
 
 	public FileSystemWrapper(@Value("${root_log_folder}") final String baseFolder,
 			@Value("${file_name_regex_pattern}") final String filePattern, final FileSystem fileSystem) {
+		if (StringUtils.isEmpty(baseFolder)) {
+			throw new IllegalArgumentException("root_log_folder config cannot be empty");
+		}
 		this.baseFolder = baseFolder;
 		this.filePattern = filePattern;
 		this.fileSystem = fileSystem;

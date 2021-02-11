@@ -20,6 +20,11 @@ public class FileSystemWrapperTest {
 	private static final String LOG_PATH_UNIX = "/work/log";
 
 	@Test
+	void empty_base_folder_config() throws IOException {
+		Assertions.assertThrows(IllegalArgumentException.class, () -> new FileSystemWrapper("", "", null));
+	}
+
+	@Test
 	void getBaseFolder_exists_unix() throws IOException {
 		FileSystemWrapper fsWrapper = mockFileSystem(LOG_PATH_UNIX, Configuration.unix(), "");
 

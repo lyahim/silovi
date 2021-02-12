@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/lyahim/silovi/49cf4a07af20c3c358618685cbceaa3720ae010f/images/silovi_bg.svg" alt="SiLoVi" height="25"/> - Simple Log Viewer
+# <img src="https://raw.githubusercontent.com/lyahim/silovi/7b2c5e138730fe9c78008cdbfe13bb3b96d086f2/images/silovi_bg.svg" alt="SiLoVi" height="25"/> - Simple Log Viewer
 The goal of the project create a very simple but useful tool to access files (mainly logs) on servers in browser without difficult installation, great infrastucture and huge amount of configuration. <br><br>This system gives access to files in efficient way with cool user experience. It is ideal for non-production systems where need real time access for logs and other files during development.
 ## [Demo will available here](#)
 

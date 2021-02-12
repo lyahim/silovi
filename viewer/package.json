@@ -8,11 +8,15 @@
   "author": "Lyahim",
   "license": "MIT",
   "scripts": {
+    "node": "nodemon server.js",
     "serve": "vue-cli-service serve --port 3000",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "node": "nodemon server.js",
-    "pkg": "npm run build && copyfiles config.json start* ./../build/viewer & pkg server.js --config=./package.json --out-path=./../build/viewer/bin --debug > build.log"
+    "copy": "copyfiles config.json package.json start* ./../build/silovi-viewer",
+    "copy-dist": "copyfiles server.js dist/**/* ./../build/silovi-viewer",
+    "pkg": "pkg server.js --config=./package.json --out-path=./../build/silovi-viewer/bin --debug > build.log",
+    "zip-bundle": "cd ./../build/ && bestzip ./silovi-viewer-bundle.zip silovi-viewer/*",
+    "zip": "cd ./../build/ && bestzip ./silovi-viewer.zip silovi-viewer/*",
+    "lint": "vue-cli-service lint"
   },
   "pkg": {
     "assets": [
@@ -24,8 +28,10 @@
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "cors": "^2.8.5",
+    "express": "^4.17.1",
     "filesize": "^6.1.0",
     "node-fetch": "^2.6.1",
+    "nodemon": "^2.0.7",
     "socket.io": "^3.1.0",
     "socket.io-client": "^3.1.0",
     "typeface-roboto": "^1.1.13",
@@ -39,10 +45,10 @@
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "babel-eslint": "^10.1.0",
+    "bestzip": "^2.1.7",
     "copyfiles": "^2.4.1",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
-    "nodemon": "^2.0.7",
     "sass": "^1.19.0",
     "sass-loader": "^8.0.0",
     "vue-cli-plugin-vuetify": "~2.0.9",

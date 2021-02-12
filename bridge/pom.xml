@@ -107,7 +107,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>../build/bridge</outputDirectory>
+							<outputDirectory>../build/silovi-bridge</outputDirectory>
 							<overwrite>true</overwrite>
 							<resources>
 								<resource>
@@ -132,11 +132,29 @@
 							<target>
 								<copy
 									file="${project.build.directory}/${project.build.finalName}.jar"
-									todir="../build/bridge/bin" />
+									todir="../build/silovi-bridge/bin" />
 							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>bin.xml</descriptors>
+					<finalName>silovi-bridge</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+					<outputDirectory>../build</outputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
 						</goals>
 					</execution>
 				</executions>

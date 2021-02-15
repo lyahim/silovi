@@ -194,7 +194,10 @@ function createJsonFromFileList(fileList, bridgeName) {
         }
         names.reduce((q, name) => {
             let temp = q.find(o => o.name === name);
-            if (!temp) q.push(temp = { name, children: pathFileMap[p], key: bridgeName + name });
+            if (!temp) {
+                let children = name !== "" || p === "/" ? pathFileMap[p] : [];
+                q.push(temp = { name, children, key: bridgeName + name })
+            };
             return temp.children;
         }, r);
         return r;

@@ -4,6 +4,6 @@
 # ----------------------------------------------------------------------------
 
 # set JAVA_HOME if needed
-# JAVA_HOME=
+# export JAVA_HOME=
 
-# TODO finish it
+java -jar .\bin\silovi-bridge.jar --spring.config.location=file:config.properties > /dev/null 2>&1 &

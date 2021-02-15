@@ -4,8 +4,6 @@
 
 @REM set JAVA_HOME=
 
-set JAVA_HOME=d:\DEV\java11\jdk-11.0.4
-
 rd /s /q build
 
 cd bridge

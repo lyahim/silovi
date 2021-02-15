@@ -46,6 +46,7 @@ Download and unzip one bridge archive and one viewer. Links below points to late
 - Bridge - In unzipped folder is existed config.properties what contains all necessary parameters to run bridge application. This is a 'key=value' configuration file. Details of configuration you can see [here](https://github.com/lyahim/silovi/tree/main/bridge).
     - **Before first run root_log_folder is had to set.**  This configuration set the base folder whom files will be read.
 - Viewer - In unzipped folder is existed config.json what contains a json structure for bridge connections with name and url properties. Name is displayed as root in browser, url is the root url where bridge serves data. The file contains a preset for one local bridge on port 8080. Details of configuration you can see [here](https://github.com/lyahim/silovi/tree/main/viewer).
+<br>!TODO Apache/nginx config / ws enabled
 ### Start
 ## DEVELOPER SECTION
 ### Technology stack / requirements

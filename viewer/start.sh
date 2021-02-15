@@ -4,6 +4,6 @@
 # ----------------------------------------------------------------------------
 
 # change PORT if default 80 not fit for requirements
-# PORT=1000
+# export PORT=1000
 
-bin\silovi_viewer-linux
+./bin/silovi_viewer-linux > ./logs/silovi.log 2>&1 &

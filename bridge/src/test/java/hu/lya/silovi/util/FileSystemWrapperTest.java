@@ -18,6 +18,8 @@ public class FileSystemWrapperTest {
 
 	private static final String LOG_PATH_WIN = "C:\\work\\log";
 	private static final String LOG_PATH_UNIX = "/work/log";
+	private static final String LINKED_PATH_WIN = "C:\\work\\linked";
+	private static final String LINKED_PATH_UNIX = "/work/linked";
 
 	@Test
 	void empty_base_folder_config() throws IOException {
@@ -122,7 +124,7 @@ public class FileSystemWrapperTest {
 
 		Stream<Path> result = fsWrapper.getFilteredLogFiles();
 
-		Assertions.assertEquals(2, result.count());
+		Assertions.assertEquals(3, result.count());
 	}
 
 	@Test
@@ -131,7 +133,7 @@ public class FileSystemWrapperTest {
 
 		Stream<Path> result = fsWrapper.getFilteredLogFiles();
 
-		Assertions.assertEquals(2, result.count());
+		Assertions.assertEquals(3, result.count());
 	}
 
 	@Test
@@ -225,6 +227,18 @@ public class FileSystemWrapperTest {
 		Files.createFile(fileSystem.getPath(baseFolder, "test.txt"));
 		Files.createFile(fileSystem.getPath(baseFolder, "system.log"));
 		Files.createFile(fileSystem.getPath(baseFolder, "sub", "app.log"));
+
+		String linkedFolder;
+		if (Configuration.unix().equals(fsType)) {
+			linkedFolder = LINKED_PATH_UNIX;
+		} else {
+			linkedFolder = LINKED_PATH_WIN;
+		}
+		Path linked = fileSystem.getPath(linkedFolder);
+		Files.createDirectory(linked);
+		Files.createFile(fileSystem.getPath(linkedFolder, "behindlink.log"));
+		Files.createSymbolicLink(fileSystem.getPath(baseFolder, "link"), linked);
+
 		FileSystemWrapper fsWrapper = new FileSystemWrapper(baseFolder, pattern, fileSystem);
 
 		Files.write(fileSystem.getPath(baseFolder, "system.log"), "lorem ipsum\ndolor sit amet".getBytes());

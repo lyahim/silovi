@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -73,7 +74,7 @@ public class FileSystemWrapper {
 				return p.getFileName().toString().matches(filePattern);
 			}
 			return false;
-		});
+		}, FileVisitOption.FOLLOW_LINKS);
 	}
 
 	public Stream<String> getLastnLinesStream(final Path filePath, final Integer lastnLines) {

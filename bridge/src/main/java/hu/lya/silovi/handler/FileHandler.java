@@ -60,7 +60,7 @@ public class FileHandler {
 	public Mono<ServerResponse> getFileEndContent(final ServerRequest serverRequest) {
 		String fileId = serverRequest.pathVariable("id");
 		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON)
-				.body(getFileEndContent(fileId).buffer(BUFFER_SIZE).log(), List.class);
+				.body(getFileEndContent(fileId).buffer().log(), List.class);
 	}
 
 	private Flux<String> getFileEndContent(final String id) {

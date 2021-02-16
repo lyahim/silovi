@@ -24,16 +24,19 @@ export default {
   watch: {
     file(newVal) {
       this.stopContentLoading();
+      this.clearContent();
       if (newVal) {
         this.scrollTo(0, "auto");
         let bridgeAndId = newVal.split("::");
         backendService
           .loadFileEnd(bridgeAndId[0], bridgeAndId[1])
           .then(response => {
-            this.content = response;
+            if (Array.isArray(response)) {
+              this.content = response;
+            } else {
+              this.content = ["File content cannot be displayed"];
+            }
           });
-      } else {
-        this.clearContent();
       }
     }
   },

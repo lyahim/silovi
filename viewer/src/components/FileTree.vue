@@ -35,7 +35,7 @@
           </template>
           <template v-slot:label="{ item }">
             {{item.name}}
-            <div class="text-caption" v-if="item.size">{{fileSize(item.size)}}</div>
+            <div class="text-caption" v-if="!item.bridge && !item.children">{{fileSize(item.size)}}</div>
           </template>
         </v-treeview>
       </v-row>

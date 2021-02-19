@@ -18,6 +18,8 @@ public class FileRouter {
 		return RouterFunctions
 				.route(RequestPredicates.GET("/file/{id}").and(RequestPredicates.accept(MediaType.APPLICATION_JSON)),
 						handler::searchInFileContent) //
+				.andRoute(RequestPredicates.GET("/file/{id}/more-lines")
+						.and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), handler::loadMoreLines) //
 				.andRoute(RequestPredicates.GET("/file-end/{id}")
 						.and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), handler::getFileEndContent)
 				.andRoute(RequestPredicates.GET("/file-tail/{id}")

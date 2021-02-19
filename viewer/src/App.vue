@@ -36,6 +36,7 @@
         hide-details
         clearable
         clear-icon="mdi-close-circle-outline"
+        @keyup.enter.native="search"
       ></v-text-field>
       <v-progress-circular class="ml-2" indeterminate size="30" v-if="inProgress"></v-progress-circular>
       <v-btn @click="stop" class="ml-2" color="error" v-if="inProgress">Stop</v-btn>
@@ -52,7 +53,7 @@
     </v-app-bar>
 
     <v-main>
-      <v-container fluid>
+      <v-container fluid class="content-container">
         <FileContent ref="contentHolder" :file="selectedFile"/>
       </v-container>
     </v-main>
@@ -100,6 +101,7 @@ export default {
     onFileSelect(selectedFile) {
       this.inProgress = false;
       this.selectedFile = selectedFile;
+      this.searchKey = null;
     },
     clearContent() {
       this.$refs.contentHolder.clearContent();
@@ -129,5 +131,8 @@ export default {
 .search-field.v-text-field {
   width: 20%;
   flex: 0 1 auto;
+}
+.content-container {
+  padding: 0 12px 0 0;
 }
 </style>

@@ -37,8 +37,22 @@ function loadFileEnd(bridgeName, fileId) {
         });
 }
 
+
+function loadMoreLines(bridgeName, fileId, startLine, direction) {
+    return axios
+        .get(backendUrl + '/more-lines/' + bridgeName + "/" + fileId, { params: { startLine, direction } })
+        .then(response => {
+            return this.content = response.data;
+        })
+        .catch(e => {
+            console.error(e);
+            return [];
+        });
+}
+
 export const backendService = {
     refreshFileTree,
     loadFileTree,
-    loadFileEnd
+    loadFileEnd,
+    loadMoreLines
 };

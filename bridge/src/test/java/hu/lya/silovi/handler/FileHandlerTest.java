@@ -56,14 +56,15 @@ public class FileHandlerTest {
 	void getFileEndContent_valid_result() throws IOException {
 		Path mockFile = Mockito.mock(Path.class);
 		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
-		Mockito.when(fileSystemWrapper.getLastnLinesStream(mockFile, null))
-				.thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+		Mockito.when(fileSystemWrapper.getLastnLinesStream(mockFile, 1)).thenReturn(Stream.of("dolor sit amet"));
 
-		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+		WebTestClient webTestClient = WebTestClient
+				.bindToRouterFunction(fileRouter.fileContentRoute(new FileHandler(1, 100L, 0, fileSystemWrapper)))
 				.build();
 
 		webTestClient.get().uri("/file-end/AbC").exchange().expectStatus().isOk().expectBody()
-				.json("[\"lorem ipsum\",\"dolor sit amet\"]");
+				.json("[{\"i\":2,\"c\":\"dolor sit amet\"}]");
 	}
 
 	@Test
@@ -152,7 +153,8 @@ public class FileHandlerTest {
 
 		Flux<String> result = webTestClient.get().uri("/file/AbC?searchKey=dolor").exchange().expectStatus().isOk()
 				.returnResult(String.class).getResponseBody();
-		StepVerifier.create(result).expectSubscription().expectNext("[\"dolor sit amet\"]").expectComplete().verify();
+		StepVerifier.create(result).expectSubscription().expectNext("[{\"i\":2,\"c\":\"dolor sit amet\"}]")
+				.expectComplete().verify();
 	}
 
 	@Test
@@ -166,7 +168,8 @@ public class FileHandlerTest {
 
 		Flux<String> result = webTestClient.get().uri("/file/AbC?searchKey=^dolor.*").exchange().expectStatus().isOk()
 				.returnResult(String.class).getResponseBody();
-		StepVerifier.create(result).expectSubscription().expectNext("[\"dolor sit amet\"]").expectComplete().verify();
+		StepVerifier.create(result).expectSubscription().expectNext("[{\"i\":2,\"c\":\"dolor sit amet\"}]")
+				.expectComplete().verify();
 	}
 
 	@Test
@@ -212,8 +215,9 @@ public class FileHandlerTest {
 
 		Flux<String> result = webTestClient.get().uri("/file/AbC").exchange().expectStatus().isOk()
 				.returnResult(String.class).getResponseBody();
-		StepVerifier.create(result).expectSubscription().expectNext("[\"lorem ipsum\",\"dolor sit amet\"]")
-				.expectComplete().verify();
+		StepVerifier.create(result).expectSubscription()
+				.expectNext("[{\"i\":1,\"c\":\"lorem ipsum\"},{\"i\":2,\"c\":\"dolor sit amet\"}]").expectComplete()
+				.verify();
 	}
 
 	@Test

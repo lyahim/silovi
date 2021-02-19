@@ -1,11 +1,43 @@
 <template>
   <div>
-    <p
-      class="text-content"
+    <div v-if="fileLoading" class="content-loader">
+      <v-progress-circular indeterminate size="100"></v-progress-circular>Loading
+    </div>
+    <div
+      class="line-data"
       :class="index%2?'even':'odd'"
-      v-for="(line, index) in contentWithGuid"
-      :key="line.key"
-    >{{line.line}}</p>
+      v-for="(line, index) in content"
+      :key="line.i"
+      @mouseover="changeLoadMoreState(line.i, true, index)"
+      @mouseleave="changeLoadMoreState(line.i, false, index)"
+    >
+      <v-btn
+        x-small
+        color="grey"
+        :style="{ minWidth: lineCounterWidth + 'px' }"
+        :ref="'idx_prev'+ line.i"
+        class="load-more v-btn default prev"
+        @click="loadMoreLines(line.i,'PREV')"
+      >
+        <v-icon>mdi-chevron-up</v-icon>
+      </v-btn>
+      <v-btn
+        x-small
+        color="grey"
+        :style="{ minWidth: lineCounterWidth + 'px' }"
+        :ref="'idx_next'+ line.i"
+        class="load-more v-btn default next"
+        @click="loadMoreLines(line.i,'NEXT')"
+      >
+        <v-icon>mdi-chevron-down</v-icon>
+      </v-btn>
+      <span
+        class="line-number"
+        :style="{ minWidth: lineCounterWidth + 'px' }"
+        @click="selectText($refs['line'+line.i])"
+      >{{line.i}}</span>
+      <span :ref="'line'+ line.i" class="ml-2 line-content">{{line.c}}</span>
+    </div>
   </div>
 </template>
 
@@ -18,7 +50,10 @@ export default {
   data() {
     return {
       content: [],
-      inProgress: false
+      inProgress: false,
+      fileLoading: false,
+      lineCounterWidth: 30,
+      lineAdding: false
     };
   },
   watch: {
@@ -26,25 +61,20 @@ export default {
       this.stopContentLoading();
       this.clearContent();
       if (newVal) {
-        this.scrollTo(0, "auto");
+        this.fileLoading = true;
         let bridgeAndId = newVal.split("::");
         backendService
           .loadFileEnd(bridgeAndId[0], bridgeAndId[1])
           .then(response => {
             if (Array.isArray(response)) {
+              this.updateLineCounterWidth(response);
               this.content = response;
             } else {
-              this.content = ["File content cannot be displayed"];
+              this.content = [{ i: "", c: "File content cannot be displayed" }];
             }
+            this.fileLoading = false;
           });
       }
-    }
-  },
-  computed: {
-    contentWithGuid: function() {
-      return this.content.map(line => {
-        return { line, key: line + this.guid() };
-      });
     }
   },
   created() {
@@ -52,20 +82,57 @@ export default {
     window.addEventListener("beforeunload", this.stopContentLoading);
   },
   updated() {
-    this.scrollTo(this.$el.clientHeight, "smooth");
+    if (!this.lineAdding) {
+      this.scrollTo(this.$el.clientHeight, "smooth");
+      this.lineAdding = false;
+    }
   },
   methods: {
+    updateLineCounterWidth(newData) {
+      let lastElement = newData[newData.length - 1];
+      if (lastElement) {
+        let largestCount = lastElement.i.toString();
+        let newWidth = 10 + largestCount.length * 9;
+        if (newWidth > this.lineCounterWidth) {
+          this.lineCounterWidth = newWidth;
+        }
+      }
+    },
+    changeLoadMoreState(lineIdx, state, index) {
+      let prevNum = this.$refs["idx_prev" + lineIdx][0].$el;
+      let nextNum = this.$refs["idx_next" + lineIdx][0].$el;
+      let line = this.$refs["line" + lineIdx][0];
+
+      if (
+        this.content[0].i > 1 &&
+        this.content[index - 1] &&
+        this.content[index - 1].i !== lineIdx - 1
+      ) {
+        if (state) {
+          prevNum.style.display = "block";
+          line.style.borderTop = "1px solid #ccc";
+        } else {
+          prevNum.style.display = "none";
+          line.style.borderTop = "none";
+        }
+      }
+
+      if (
+        this.content[index + 1] &&
+        this.content[index + 1].i !== lineIdx + 1
+      ) {
+        if (state) {
+          nextNum.style.display = "block";
+          line.style.borderBottom = "1px solid #ccc";
+        } else {
+          nextNum.style.display = "none";
+          line.style.borderBottom = "none";
+        }
+      }
+    },
     stopContentLoading() {
       this.inProgress = false;
       this.$socket.client.emit("file-stop");
-    },
-    guid() {
-      return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-        (
-          c ^
-          (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-        ).toString(16)
-      );
     },
     scrollTo(height, behavior) {
       window.scrollTo({
@@ -77,6 +144,38 @@ export default {
     clearContent() {
       this.content = [];
     },
+    loadMoreLines(startLine, direction) {
+      let bridgeAndId = this.file.split("::");
+      backendService
+        .loadMoreLines(bridgeAndId[0], bridgeAndId[1], startLine, direction)
+        .then(response => {
+          if (Array.isArray(response)) {
+            this.lineAdding = true;
+            let index = this.content.findIndex(item => item.i === startLine);
+            if (index >= 0) {
+              response.forEach(item => {
+                let cIndex = this.content.findIndex(
+                  cItem => cItem.i === item.i
+                );
+                if (cIndex > 0) {
+                  this.content.splice(cIndex, 1);
+                }
+              });
+              let index = this.content.findIndex(item => item.i === startLine);
+              this.changeLoadMoreState(startLine, false, index);
+              if ("NEXT" === direction) {
+                response.forEach(item => {
+                  this.content.splice(++index, 0, item);
+                });
+              } else {
+                response.forEach(item => {
+                  this.content.splice(index++, 0, item);
+                });
+              }
+            }
+          }
+        });
+    },
     search(searchKey) {
       this.clearContent();
       this.inProgress = true;
@@ -85,7 +184,7 @@ export default {
       this.$socket.client.emit("file", {
         bridge: bridgeAndId[0],
         fileId: bridgeAndId[1],
-        searchKey: searchKey
+        searchKey
       });
     },
     watch(searchKey) {
@@ -100,7 +199,36 @@ export default {
     },
     appendFileContent(newContent) {
       if (this.inProgress) {
-        this.content.push.apply(this.content, JSON.parse(newContent));
+        let newData = JSON.parse(newContent);
+
+        this.updateLineIndexes(newData);
+        this.updateLineCounterWidth(newData);
+        this.content.push.apply(this.content, newData);
+      }
+    },
+    updateLineIndexes(newData) {
+      let lastElement = this.content[this.content.length - 1];
+      if (lastElement) {
+        let lastLineNumber = lastElement.i;
+
+        if (newData[0] && newData[0].i < 0) {
+          newData.forEach(element => {
+            element.i = ++lastLineNumber;
+          });
+        }
+      }
+    },
+    selectText(container) {
+      if (document.selection) {
+        // IE
+        let range = document.body.createTextRange();
+        range.moveToElementText(container[0]);
+        range.select();
+      } else if (window.getSelection) {
+        let range = document.createRange();
+        range.selectNode(container[0]);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
       }
     }
   }
@@ -110,7 +238,33 @@ export default {
 .v-application p {
   margin: 0;
 }
-.text-content {
+.line-data {
+  display: flex;
+}
+.line-number {
+  background-color: #cccccc;
+  padding: 2px 5px;
+  cursor: pointer;
+  text-align: center;
+}
+.line-content {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.content-loader {
+  width: 150px;
+  margin: 0 auto;
+  text-align: center;
+}
+.load-more {
+  position: absolute;
+  display: none;
+  z-index: 5;
+}
+.load-more.prev {
+  margin-top: -17px;
+}
+.load-more.next {
+  margin-top: 20px;
 }
 </style>

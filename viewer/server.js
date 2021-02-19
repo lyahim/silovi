@@ -7,7 +7,7 @@ const cors = require('cors');
 const fetch = require("node-fetch");
 const AbortController = require("abort-controller")
 
-const fileErrorMessage = ['File content cannot be displayed'];
+const fileErrorMessage = [{ 'i': '', 'c': 'File content cannot be displayed' }];
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
@@ -53,6 +53,25 @@ app.get('/file-end/:bridge/:fileId', (req, res) => {
         let bridgeConfig = configFileJson.find(c => c.name === bridge);
         if (bridgeConfig) {
             axios.get(bridgeConfig.url + '/file-end/' + req.params.fileId).then((response) => {
+                res.send(response.data);
+            }, (error) => {
+                console.error(error);
+                res.send(fileErrorMessage);
+            });
+        } else {
+            res.send(fileErrorMessage);
+        }
+    } else {
+        res.send(fileErrorMessage);
+    }
+});
+
+app.get('/more-lines/:bridge/:fileId', (req, res) => {
+    let bridge = req.params.bridge;
+    if (bridge) {
+        let bridgeConfig = configFileJson.find(c => c.name === bridge);
+        if (bridgeConfig) {
+            axios.get(bridgeConfig.url + '/file/' + req.params.fileId + "/more-lines", { params: { startLine: req.query.startLine, direction: req.query.direction } }).then((response) => {
                 res.send(response.data);
             }, (error) => {
                 console.error(error);

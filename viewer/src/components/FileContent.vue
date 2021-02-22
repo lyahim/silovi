@@ -104,9 +104,8 @@ export default {
       let line = this.$refs["line" + lineIdx][0];
 
       if (
-        this.content[0].i > 1 &&
-        this.content[index - 1] &&
-        this.content[index - 1].i !== lineIdx - 1
+        (index === 0 && this.content[0].i > 1) ||
+        (this.content[index - 1] && this.content[index - 1].i !== lineIdx - 1)
       ) {
         if (state) {
           prevNum.style.display = "block";

@@ -21,13 +21,19 @@
       </v-btn>
     </v-system-bar>
 
-    <v-navigation-drawer app permanent width="20%">
+    <v-navigation-drawer v-if="showFiles" app permanent width="20%">
       <FileTree @fileSelect="onFileSelect"/>
     </v-navigation-drawer>
 
     <v-app-bar app color="secondary" dark flat v-if="selectedFile">
+      <v-btn icon absolute small v-if="showFiles" @click="showFiles = false">
+        <v-icon>mdi-chevron-triple-left</v-icon>
+      </v-btn>
+      <v-btn icon absolute small v-if="!showFiles" @click="showFiles = true">
+        <v-icon>mdi-chevron-triple-right</v-icon>
+      </v-btn>
       <v-text-field
-        class="search-field"
+        class="search-field ml-6"
         v-model="searchKey"
         label="Search"
         dark
@@ -82,7 +88,8 @@ export default {
     return {
       selectedFile: null,
       searchKey: null,
-      inProgress: false
+      inProgress: false,
+      showFiles: true
     };
   },
   created() {

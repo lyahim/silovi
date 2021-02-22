@@ -175,7 +175,7 @@ public class FileHandler {
 
 	private Flux<LineDataDto> loadMoreLines(final String fileId, final long startLine,
 			final MoreLineDirection direction) {
-		if (StringUtils.isNotEmpty(fileId) && direction != null) {
+		if (StringUtils.isNotEmpty(fileId)) {
 			Path filePath = fileSystemWrapper.getPathByFileId(fileId);
 			if (filePath != null) {
 				try {
@@ -218,18 +218,10 @@ public class FileHandler {
 				try {
 					AtomicLong idx = new AtomicLong(0);
 					Stream<LineDataDto> result;
-
-					if (StringUtils.isBlank(searchKey)) {
-						result = fileSystemWrapper.getFileStream(filePath).filter(line -> {
-							idx.incrementAndGet();
-							return true;
-						}).map(line -> FileFunctions.mapLineToDto.apply(idx, line));
-					} else {
-						result = fileSystemWrapper.getFileStream(filePath).filter(line -> {
-							idx.incrementAndGet();
-							return filterLinesBySearchKey(line, searchKey);
-						}).map(line -> FileFunctions.mapLineToDto.apply(idx, line));
-					}
+					result = fileSystemWrapper.getFileStream(filePath).filter(line -> {
+						idx.incrementAndGet();
+						return filterLinesBySearchKey(line, searchKey);
+					}).map(line -> FileFunctions.mapLineToDto.apply(idx, line));
 					return Flux.fromStream(result);
 				} catch (IOException e) {
 					log.error(e.getMessage(), e);

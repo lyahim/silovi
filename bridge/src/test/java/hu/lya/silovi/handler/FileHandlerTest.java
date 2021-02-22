@@ -33,6 +33,35 @@ public class FileHandlerTest {
 	private FileHandler fileHandler;
 
 	@Test
+	void getFileEndContent_bound_zero() throws IOException {
+		Path mockFile = mockFile("/");
+		Mockito.when(fileSystemWrapper.getBaseFolder()).thenReturn(Path.of("irrelevant"));
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+		Mockito.when(fileSystemWrapper.getLastnLinesStream(mockFile, 3))
+				.thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+
+		WebTestClient webTestClient = WebTestClient
+				.bindToRouterFunction(fileRouter.fileContentRoute(new FileHandler(3, 100L, 1, fileSystemWrapper)))
+				.build();
+
+		webTestClient.get().uri("/file-end/AbC").exchange().expectStatus().isOk().expectBody()
+				.json("[{\"i\":1,\"c\":\"lorem ipsum\"},{\"i\":2,\"c\":\"dolor sit amet\"}]");
+	}
+
+	@Test
+	void getFileEndContent_fileException() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getBaseFolder()).thenThrow(new IOException("file exception"));
+
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file-end/AbC").exchange().expectStatus().isOk().expectBody().isEmpty();
+	}
+
+	@Test
 	void getFileEndContent_invalid_id() {
 		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(null);
 
@@ -54,7 +83,8 @@ public class FileHandlerTest {
 
 	@Test
 	void getFileEndContent_valid_result() throws IOException {
-		Path mockFile = Mockito.mock(Path.class);
+		Path mockFile = mockFile("/");
+		Mockito.when(fileSystemWrapper.getBaseFolder()).thenReturn(Path.of("irrelevant"));
 		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
 		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
 		Mockito.when(fileSystemWrapper.getLastnLinesStream(mockFile, 1)).thenReturn(Stream.of("dolor sit amet"));
@@ -115,6 +145,144 @@ public class FileHandlerTest {
 		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.filesRoute(fileHandler)).build();
 
 		webTestClient.get().uri("/files").exchange().expectStatus().isOk().expectBody().json("[]");
+	}
+
+	@Test
+	void loadMoreLines_file_notExists() {
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(null);
+
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=1&direction=NEXT").exchange().expectStatus().isOk()
+				.expectBody().json("[]");
+	}
+
+	@Test
+	void loadMoreLines_fileException() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenThrow(new IOException("file exception"));
+
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=1&direction=NEXT").exchange().expectStatus().isOk()
+				.expectBody().json("[]");
+	}
+
+	@Test
+	void loadMoreLines_invalid_direction() {
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=1&direction=asd").exchange().expectStatus()
+				.is4xxClientError();
+	}
+
+	@Test
+	void loadMoreLines_invalid_startLine() {
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=asd&direction=NEXT").exchange().expectStatus()
+				.is4xxClientError();
+	}
+
+	@Test
+	void loadMoreLines_next_more_than_line_exists() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+
+		WebTestClient webTestClient = WebTestClient
+				.bindToRouterFunction(fileRouter.fileContentRoute(new FileHandler(1, 100L, 3, fileSystemWrapper)))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=1&direction=NEXT").exchange().expectStatus().isOk()
+				.expectBody().json("[{\"i\":2,\"c\":\"dolor sit amet\"}]");
+	}
+
+	@Test
+	void loadMoreLines_next_simple() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+
+		WebTestClient webTestClient = WebTestClient
+				.bindToRouterFunction(fileRouter.fileContentRoute(new FileHandler(1, 100L, 1, fileSystemWrapper)))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=1&direction=NEXT").exchange().expectStatus().isOk()
+				.expectBody().json("[{\"i\":2,\"c\":\"dolor sit amet\"}]");
+	}
+
+	@Test
+	void loadMoreLines_no_direction() {
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=1").exchange().expectStatus().is4xxClientError();
+	}
+
+	@Test
+	void loadMoreLines_no_id() {
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file/ /more-lines?startLine=1&direction=NEXT").exchange().expectStatus().isOk()
+				.expectBody().json("[]");
+
+	}
+
+	@Test
+	void loadMoreLines_no_startLine() {
+		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?direction=NEXT").exchange().expectStatus().is4xxClientError();
+	}
+
+	@Test
+	void loadMoreLines_prev_collated_zero() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+
+		WebTestClient webTestClient = WebTestClient
+				.bindToRouterFunction(fileRouter.fileContentRoute(new FileHandler(1, 100L, 2, fileSystemWrapper)))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=0&direction=PREV").exchange().expectStatus().isOk()
+				.expectBody().json("[{\"i\":1,\"c\":\"lorem ipsum\"},{\"i\":2,\"c\":\"dolor sit amet\"}]");
+	}
+
+	@Test
+	void loadMoreLines_prev_more_than_line_exists() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+
+		WebTestClient webTestClient = WebTestClient
+				.bindToRouterFunction(fileRouter.fileContentRoute(new FileHandler(1, 100L, 3, fileSystemWrapper)))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=1&direction=PREV").exchange().expectStatus().isOk()
+				.expectBody().json("[{\"i\":1,\"c\":\"lorem ipsum\"},{\"i\":2,\"c\":\"dolor sit amet\"}]");
+	}
+
+	@Test
+	void loadMoreLines_prev_not_collated() throws IOException {
+		Path mockFile = Mockito.mock(Path.class);
+		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockFile);
+		Mockito.when(fileSystemWrapper.getFileStream(mockFile)).thenReturn(Stream.of("lorem ipsum", "dolor sit amet"));
+
+		WebTestClient webTestClient = WebTestClient
+				.bindToRouterFunction(fileRouter.fileContentRoute(new FileHandler(1, 100L, 1, fileSystemWrapper)))
+				.build();
+
+		webTestClient.get().uri("/file/AbC/more-lines?startLine=1&direction=PREV").exchange().expectStatus().isOk()
+				.expectBody().json("[{\"i\":1,\"c\":\"lorem ipsum\"}]");
 	}
 
 	private Path mockFile(final String parentFolder) throws IOException {

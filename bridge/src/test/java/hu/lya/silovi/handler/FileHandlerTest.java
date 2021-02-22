@@ -2,12 +2,10 @@ package hu.lya.silovi.handler;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -416,8 +414,6 @@ public class FileHandlerTest {
 		Mockito.when(fileSystemWrapper.getFileSize(mockPath)).thenReturn(1L).thenReturn(2L).thenReturn(3L)
 				.thenReturn(4L);
 		Mockito.when(fileSystemWrapper.getPathByFileId("AbC")).thenReturn(mockPath);
-		Mockito.when(fileSystemWrapper.readLinesFromIndex(ArgumentMatchers.eq(mockPath), ArgumentMatchers.anyLong()))
-				.thenReturn(Stream.of("new line").collect(Collectors.toList()));
 
 		WebTestClient webTestClient = WebTestClient.bindToRouterFunction(fileRouter.fileContentRoute(fileHandler))
 				.build();

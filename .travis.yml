@@ -6,11 +6,13 @@ jobs:
           script:
               - cd bridge
               - mvn clean
-              - mvn install
-              - mvn package
+              - mvn install -DskipTests
+              - mvn package -DskipTests
+              - mvn test
 
         - language: node_js
           node_js: 12
           script:
               - cd viewer
+              - npm install
               - npm run build && npm run copy & npm run pkg && npm run zip-bundle && rd /s /q ..\build\silovi-viewer && npm run build && npm run copy & npm run copy-dist && npm run zip

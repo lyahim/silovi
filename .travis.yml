@@ -4,9 +4,10 @@ jobs:
           jdk: openjdk11
           sudo: true
           script:
-              - ./bridge/mvn clean
-              - ./bridge/mvn install
-              - ./bridge/mvn package
+              - cd bridge
+              - mvn clean
+              - mvn install
+              - mvn package
 
         - language: node_js
           node_js: 12

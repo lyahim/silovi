@@ -3,8 +3,7 @@
 </p>
 
 # SiLoVi - Simple Log Viewer
-[![Build Status](https://travis-ci.com/lyahim/silovi.svg?branch=main)](https://travis-ci.com/lyahim/silovi)
-[![Coverage Status](https://coveralls.io/repos/github/lyahim/silovi/badge.svg?branch=main)](https://coveralls.io/github/lyahim/silovi?branch=main)<br><br>
+[![Build Status](https://travis-ci.com/lyahim/silovi.svg?branch=main)](https://travis-ci.com/lyahim/silovi)<br><br>
 The goal of the project create a very simple but useful tool to access files (mainly logs) on servers in browser without difficult installation, great infrastucture and huge amount of configuration. <br><br>This system gives access to files in efficient way with cool user experience. It is ideal for non-production systems where need real time access for logs and other files during development.
 ## [Demo will available here](#)
 

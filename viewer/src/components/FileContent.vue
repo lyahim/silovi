@@ -142,6 +142,7 @@ export default {
     },
     clearContent() {
       this.content = [];
+      this.lineAdding = false;
     },
     loadMoreLines(startLine, direction) {
       let bridgeAndId = this.file.split("::");

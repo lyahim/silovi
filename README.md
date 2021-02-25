@@ -3,11 +3,10 @@
 </p>
 
 # SiLoVi - Simple Log Viewer
-|  | Bridge | Viewer |
+| Status | Bridge | Viewer |
 | --- | --- | --- |
-| Build status | [![Build Status](https://travis-ci.com/lyahim/silovi.svg?branch=main)](https://travis-ci.com/lyahim/silovi) | [![Build Status](https://travis-ci.com/lyahim/silovi.svg?branch=main)](https://travis-ci.com/lyahim/silovi) |
+| Build | [![Build Status](https://travis-ci.com/lyahim/silovi.svg?branch=main)](https://travis-ci.com/lyahim/silovi) | [![Build Status](https://travis-ci.com/lyahim/silovi.svg?branch=main)](https://travis-ci.com/lyahim/silovi) |
 | Sonar check | [![Bridge Quality Status](https://sonarcloud.io/api/project_badges/measure?project=lyahim_silovi&metric=alert_status)](https://sonarcloud.io/dashboard?id=lyahim_silovi) | [![Viewer Quality Status](https://sonarcloud.io/api/project_badges/measure?project=silovi-viewer&metric=alert_status)](https://sonarcloud.io/dashboard?id=silovi-viewer) |
-|||
 The goal of the project create a very simple but useful tool to access files (mainly logs) on servers in browser without difficult installation, great infrastucture and huge amount of configuration. <br><br>This system gives access to files in efficient way with cool user experience. It is ideal for non-production systems where need real time access for logs and other files during development.
 ### [Demo will available here](#)
 

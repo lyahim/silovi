@@ -35,7 +35,7 @@ jobs:
     - name: Build with Maven
       run: mvn --batch-mode --update-snapshots verify
       working-directory: bridge
-    - name: Sonar analyze
+    - name: Analyze with SonarCloud
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -7,8 +7,8 @@
 | --- | --- | --- |
 | Build | [![Build Status](https://travis-ci.com/lyahim/silovi.svg?branch=main)](https://travis-ci.com/lyahim/silovi) | [![Build Status](https://travis-ci.com/lyahim/silovi.svg?branch=main)](https://travis-ci.com/lyahim/silovi) |
 | Sonar check | [![Bridge Quality Status](https://sonarcloud.io/api/project_badges/measure?project=lyahim_silovi&metric=alert_status)](https://sonarcloud.io/dashboard?id=lyahim_silovi) | [![Viewer Quality Status](https://sonarcloud.io/api/project_badges/measure?project=silovi-viewer&metric=alert_status)](https://sonarcloud.io/dashboard?id=silovi-viewer) |
-The goal of the project create a very simple but useful tool to access files (mainly logs) on servers in browser without difficult installation, great infrastucture and huge amount of configuration. <br><br>This system gives access to files in efficient way with cool user experience. It is ideal for non-production systems where need real time access for logs and other files during development.
 ### [Demo will available here](#)
+The goal of the project create a very simple but useful tool to access files (mainly logs) on servers in browser without difficult installation, great infrastucture and huge amount of configuration. <br><br>This system gives access to files in efficient way with cool user experience. It is ideal for non-production systems where need real time access for logs and other files during development.
 
 ## Concept
 SiLoVi system has 2 main part to give access logs/files on a server. First named bridge which gives an entry point to a server which has log files. This entry point can be safe with basic authentication. viewer gives a fancy graphical UI on web browser to see file contents. The two components has 1-N relation, which means a viewer can show content from many bridges what configured and connected that. Components can be running on same server and separately from each other.

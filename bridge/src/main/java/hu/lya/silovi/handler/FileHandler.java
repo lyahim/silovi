@@ -77,8 +77,9 @@ public class FileHandler {
 
 	private FileDataDto getFileDataByPath(final Path file, final String baseFolderPathStr) {
 		FileDataDto data = new FileDataDto();
-		String relativePath = file.getParent().toString().replace(baseFolderPathStr, PATH_SEPARATOR).replace("\\\\", "/").replace("//", "/"); // remove windows
-																																				// separators
+		String relativePath = file.getParent().toString().replace(baseFolderPathStr, PATH_SEPARATOR).replaceAll("\\\\", "/").replace("//", "/"); // remove
+																																					// windows
+																																					// separators
 		String fileName = file.getFileName().toString();
 
 		data.setId(generateFileId(relativePath, fileName));

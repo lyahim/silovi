@@ -9,12 +9,14 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.google.common.base.Supplier;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 
-public class FileSystemWrapperTest {
+class FileSystemWrapperTest {
 
 	private static final String LOG_PATH_WIN = "C:\\work\\log";
 	private static final String LOG_PATH_UNIX = "/work/log";
@@ -152,8 +154,7 @@ public class FileSystemWrapperTest {
 		FileSystemWrapper fsWrapper = mockFileSystem(LOG_PATH_UNIX, Configuration.unix(), ".*.log");
 		FileSystem fs = fsWrapper.getBaseFolder().getFileSystem();
 
-		Supplier<Stream<String>> streamSupplier = () -> fsWrapper
-				.getLastnLinesStream(fs.getPath(LOG_PATH_UNIX, "system.log"), 1);
+		Supplier<Stream<String>> streamSupplier = () -> fsWrapper.getLastnLinesStream(fs.getPath(LOG_PATH_UNIX, "system.log"), 1);
 
 		Assertions.assertTrue(streamSupplier.get().findFirst().isPresent());
 		Assertions.assertEquals(1, streamSupplier.get().count());
@@ -181,6 +182,19 @@ public class FileSystemWrapperTest {
 
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = { ".,-", // illegal id
+			"aaa", // invalid id
+			"L21pc3NpbmcubG9n" // missing file
+	})
+	void getPathByFileId_error_cases(final String fileId) throws IOException {
+		FileSystemWrapper fsWrapper = mockFileSystem(LOG_PATH_UNIX, Configuration.unix(), ".*.log");
+
+		Path path = fsWrapper.getPathByFileId(fileId);
+
+		Assertions.assertNull(path);
+	}
+
 	@Test
 	void getPathByFileId_existing_file() throws IOException {
 		FileSystemWrapper fsWrapper = mockFileSystem(LOG_PATH_UNIX, Configuration.unix(), ".*.log");
@@ -190,35 +204,7 @@ public class FileSystemWrapperTest {
 		Assertions.assertNotNull(path);
 	}
 
-	@Test
-	void getPathByFileId_illegal_id() throws IOException {
-		FileSystemWrapper fsWrapper = mockFileSystem(LOG_PATH_UNIX, Configuration.unix(), ".*.log");
-
-		Path path = fsWrapper.getPathByFileId(".,-");
-
-		Assertions.assertNull(path);
-	}
-
-	@Test
-	void getPathByFileId_invalid_id() throws IOException {
-		FileSystemWrapper fsWrapper = mockFileSystem(LOG_PATH_UNIX, Configuration.unix(), ".*.log");
-
-		Path path = fsWrapper.getPathByFileId("aaa");
-
-		Assertions.assertNull(path);
-	}
-
-	@Test
-	void getPathByFileId_missing_file() throws IOException {
-		FileSystemWrapper fsWrapper = mockFileSystem(LOG_PATH_UNIX, Configuration.unix(), ".*.log");
-
-		Path path = fsWrapper.getPathByFileId("L21pc3NpbmcubG9n");
-
-		Assertions.assertNull(path);
-	}
-
-	private FileSystemWrapper mockFileSystem(final String baseFolder, final Configuration fsType, final String pattern)
-			throws IOException {
+	private FileSystemWrapper mockFileSystem(final String baseFolder, final Configuration fsType, final String pattern) throws IOException {
 		FileSystem fileSystem = Jimfs.newFileSystem(fsType);
 		Path root = fileSystem.getPath(baseFolder);
 		Path sub = fileSystem.getPath(baseFolder, "sub");

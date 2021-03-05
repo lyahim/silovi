@@ -45,8 +45,7 @@ public class FileHandler {
 	private Integer moreLinesCount;
 	private Map<String, FileSizeDto> fileSizeCache;
 
-	public FileHandler(@Value("${tail_lines_count}") final Integer tailLinesCount,
-			@Value("${file_check_interval}") final Long fileCheckInterval,
+	public FileHandler(@Value("${tail_lines_count}") final Integer tailLinesCount, @Value("${file_check_interval}") final Long fileCheckInterval,
 			@Value("${more_lines_count}") final Integer moreLinesCount, final FileSystemWrapper fileSystemWrapper) {
 		this.tailLinesCount = tailLinesCount;
 		this.fileCheckInterval = fileCheckInterval;
@@ -72,15 +71,14 @@ public class FileHandler {
 	}
 
 	private String generateFileId(final String relativePath, final String fileName) {
-		return Base64.getUrlEncoder().withoutPadding().encodeToString(
-				new String(relativePath + (!relativePath.equals(PATH_SEPARATOR) ? PATH_SEPARATOR : "") + fileName)
-						.getBytes());
+		String filePath = relativePath + (!relativePath.equals(PATH_SEPARATOR) ? PATH_SEPARATOR : "") + fileName;
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(filePath.getBytes());
 	}
 
 	private FileDataDto getFileDataByPath(final Path file, final String baseFolderPathStr) {
 		FileDataDto data = new FileDataDto();
-		String relativePath = file.getParent().toString().replace(baseFolderPathStr, PATH_SEPARATOR)
-				.replaceAll("\\\\", "/").replace("//", "/"); // remove windows separators
+		String relativePath = file.getParent().toString().replace(baseFolderPathStr, PATH_SEPARATOR).replace("\\\\", "/").replace("//", "/"); // remove windows
+																																				// separators
 		String fileName = file.getFileName().toString();
 
 		data.setId(generateFileId(relativePath, fileName));
@@ -93,8 +91,7 @@ public class FileHandler {
 	@SuppressWarnings("deprecation")
 	public Mono<ServerResponse> getFileEndContent(final ServerRequest serverRequest) {
 		String fileId = serverRequest.pathVariable("id");
-		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON)
-				.body(getFileEndContent(fileId).buffer().log(), List.class);
+		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON).body(getFileEndContent(fileId).buffer().log(), List.class);
 	}
 
 	private Flux<LineDataDto> getFileEndContent(final String id) {
@@ -103,11 +100,10 @@ public class FileHandler {
 			if (filePath != null) {
 				try {
 					AtomicLong index = calculateStartLine(filePath);
-					Stream<LineDataDto> lastLines = fileSystemWrapper.getLastnLinesStream(filePath, tailLinesCount)
-							.map(line -> {
-								index.incrementAndGet();
-								return FileFunctions.mapLineToDto.apply(index, line);
-							});
+					Stream<LineDataDto> lastLines = fileSystemWrapper.getLastnLinesStream(filePath, tailLinesCount).map(line -> {
+						index.incrementAndGet();
+						return FileFunctions.mapLineToDto.apply(index, line);
+					});
 					return Flux.fromStream(lastLines);
 				} catch (IOException e) {
 					log.error(e.getMessage(), e);
@@ -123,10 +119,7 @@ public class FileHandler {
 		try {
 			String baseFolderPathStr = fileSystemWrapper.getBaseFolder().toString();
 
-			return Flux.fromStream(fileSystemWrapper.getFilteredLogFiles()).map(file -> {
-				return getFileDataByPath(file, baseFolderPathStr);
-			});
-
+			return Flux.fromStream(fileSystemWrapper.getFilteredLogFiles()).map(file -> getFileDataByPath(file, baseFolderPathStr));
 		} catch (IOException e) {
 			log.error(e.getMessage(), e);
 			return Flux.empty();
@@ -166,15 +159,13 @@ public class FileHandler {
 			long startLine = Long.parseLong(startLineParam.get());
 			MoreLineDirection direction = MoreLineDirection.valueOf(directionParam.get());
 
-			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-					.body(loadMoreLines(fileId, startLine, direction).log(), List.class);
+			return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(loadMoreLines(fileId, startLine, direction).log(), List.class);
 		} catch (IllegalArgumentException e) {
 			return ServerResponse.badRequest().build();
 		}
 	}
 
-	private Flux<LineDataDto> loadMoreLines(final String fileId, final long startLine,
-			final MoreLineDirection direction) {
+	private Flux<LineDataDto> loadMoreLines(final String fileId, final long startLine, final MoreLineDirection direction) {
 		if (StringUtils.isNotEmpty(fileId)) {
 			Path filePath = fileSystemWrapper.getPathByFileId(fileId);
 			if (filePath != null) {
@@ -187,11 +178,10 @@ public class FileHandler {
 						}
 					}
 					AtomicLong index = new AtomicLong(realStart);
-					Stream<LineDataDto> result = fileSystemWrapper.getFileStream(filePath).skip(realStart)
-							.limit(moreLinesCount).map(line -> {
-								index.incrementAndGet();
-								return FileFunctions.mapLineToDto.apply(index, line);
-							});
+					Stream<LineDataDto> result = fileSystemWrapper.getFileStream(filePath).skip(realStart).limit(moreLinesCount).map(line -> {
+						index.incrementAndGet();
+						return FileFunctions.mapLineToDto.apply(index, line);
+					});
 					return Flux.fromStream(result);
 				} catch (IOException e) {
 					log.error(e.getMessage(), e);
@@ -207,8 +197,7 @@ public class FileHandler {
 		String fileId = serverRequest.pathVariable("id");
 		String searchKey = serverRequest.queryParam("searchKey").orElse(null);
 		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON)
-				.body(searchInFileContent(fileId, searchKey).log().buffer(BUFFER_SIZE)
-						.delayElements(Duration.ofMillis(DELAY_MS)), List.class);
+				.body(searchInFileContent(fileId, searchKey).log().buffer(BUFFER_SIZE).delayElements(Duration.ofMillis(DELAY_MS)), List.class);
 	}
 
 	private Flux<LineDataDto> searchInFileContent(final String id, final String searchKey) {
@@ -235,8 +224,7 @@ public class FileHandler {
 	public Mono<ServerResponse> tailfFile(final ServerRequest serverRequest) {
 		String fileId = serverRequest.pathVariable("id");
 		String searchKey = serverRequest.queryParam("searchKey").orElse(null);
-		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON)
-				.body(watchFileChanges(fileId, searchKey).log(), List.class);
+		return ServerResponse.ok().contentType(MediaType.APPLICATION_STREAM_JSON).body(watchFileChanges(fileId, searchKey).log(), List.class);
 	}
 
 	private Flux<List<LineDataDto>> watchFileChanges(final String fileId, final String searchKey) {
@@ -251,12 +239,10 @@ public class FileHandler {
 					long length = fileSystemWrapper.getFileSize(filePath);
 					long lastLength = filePointer.longValue();
 					if (length > lastLength) {
-						result.addAll(
-								fileSystemWrapper.readLinesFromIndex(filePath, lastLength).stream().filter(line -> {
-									lineCount.incrementAndGet();
-									return filterLinesBySearchKey(line, searchKey);
-								}).map(line -> FileFunctions.mapLineToDto.apply(lineCount, line))
-										.collect(Collectors.toList()));
+						result.addAll(fileSystemWrapper.readLinesFromIndex(filePath, lastLength).stream().filter(line -> {
+							lineCount.incrementAndGet();
+							return filterLinesBySearchKey(line, searchKey);
+						}).map(line -> FileFunctions.mapLineToDto.apply(lineCount, line)).collect(Collectors.toList()));
 						if (!result.isEmpty()) {
 							filePointer.set(length);
 						}

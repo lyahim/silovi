@@ -101,6 +101,7 @@ public class FileSystemWrapper {
 				return filePath;
 			}
 		} catch (IllegalArgumentException e) {
+			log.error(e.getMessage(), e);
 		}
 		return null;
 	}
